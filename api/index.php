@@ -28,22 +28,44 @@
       <tbody>
         <?php
 
-        $conexion = mysqli_connect(getenv('MYSQL_HOST'), getenv('MYSQL_USER'), getenv('MYSQL_PASSWORD'), "SG");
-
-        $cadenaSQL = "select * from s_customer";
-        $resultado = mysqli_query($conexion, $cadenaSQL);
-
-        while ($fila = mysqli_fetch_object($resultado)) {
-         echo "<tr><td> " .$fila->name . 
-         "</td><td>" . $fila->credit_rating .
-         "</td><td>" . $fila->address .
-         "</td><td>" . $fila->city .
-         "</td><td>" . $fila->state .
-         "</td><td>" . $fila->country .
-         "</td><td>" . $fila->zip_code .
-         "</td></tr>";
-       }
-       ?>
+        $host = $_ENV['MYSQL_HOST'] ?? null;
+        $user = $_ENV['MYSQL_USER'] ?? null;
+        $pass = $_ENV['MYSQL_PASSWORD'] ?? null;
+        $db   = $_ENV['MYSQL_DATABASE'] ?? null;
+        
+        if (!$host || !$user || !$db) {
+            die('Database environment variables are not defined');
+        }
+        
+        $conexion = new mysqli($host, $user, $pass, $db);
+        
+        if ($conexion->connect_error) {
+            die('Database connection failed: ' . $conexion->connect_error);
+        }
+        
+        $conexion->set_charset('utf8mb4');
+        
+        $cadenaSQL = "SELECT * FROM s_customer";
+        $resultado = $conexion->query($cadenaSQL);
+        
+        if (!$resultado) {
+            die('Query error: ' . $conexion->error);
+        }
+        
+        while ($fila = $resultado->fetch_object()) {
+            echo "<tr>
+                <td>{$fila->name}</td>
+                <td>{$fila->credit_rating}</td>
+                <td>{$fila->address}</td>
+                <td>{$fila->city}</td>
+                <td>{$fila->state}</td>
+                <td>{$fila->country}</td>
+                <td>{$fila->zip_code}</td>
+            </tr>";
+        }
+        
+        $conexion->close();
+        ?>
      </tbody>
    </table>
  </div>
